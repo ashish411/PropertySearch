@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Property Search</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_add_property">AddPropertyActivity</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_addMore">Add Property</string>
+</resources>

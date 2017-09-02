@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.ashis.propertysearch.MainActivity">
+    <item
+        android:id="@+id/action_edit"
+        android:orderInCategory="100"
+        android:title="@string/action_edit"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_mode_edit_white_24dp"/>
+
+    <item
+        android:id="@+id/action_addMore"
+        android:orderInCategory="99"
+        android:title="@string/action_addMore"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_add_white_24dp"/>
+</menu>
