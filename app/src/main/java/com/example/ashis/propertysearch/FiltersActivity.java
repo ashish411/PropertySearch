@@ -1,5 +1,6 @@
 package com.example.ashis.propertysearch;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -7,11 +8,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.ashis.propertysearch.data.PropertyContract;
 import com.example.ashis.propertysearch.data.PropertyDbHelper;
@@ -19,19 +26,22 @@ import com.example.ashis.propertysearch.data.PropertyDbHelper;
 public class FiltersActivity extends AppCompatActivity implements View.OnClickListener{
     private LinearLayout mPktSelectorLayout,mPlotSelectorLayout,mSectorSelectorLayout,mFloorSelectorLayout,
             mAreaSelectorLayout,mPriceSelectorLayout,mPostedBySelectorLayout,
-            mLocationSelectorLayout,mBedroomSelector,mSocietySelector;
+            mLocationSelectorLayout,mBedroomSelector,mSocietySelector,mPlotFloorSelector;
     private Button mClearAllBtn,mApplyBtn;
     private SQLiteDatabase mDb;
     private TextView mPkyValueTxt,mPlotValueTxt,mSectorValueTxt,mFloorValueTxt,mPostedByValue,
-            mAreaValueTxt,mPriceValueTxt,mLocationValueTxt,mBedroomValue,mSocietyValue;
+            mAreaValueTxt,mPriceValueTxt,mLocationValueTxt,mBedroomValue,mSocietyValue,mPlotFloorValue;
     private ArrayAdapter<String> mAdapter;
     private StringBuilder stringBuilder;
     private String queryString;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filters);
 
+        mPlotFloorSelector=(LinearLayout)findViewById(R.id.plotFloorSelectorLayout);
         mSocietySelector=(LinearLayout)findViewById(R.id.societySelectorLayout);
         mBedroomSelector=(LinearLayout)findViewById(R.id.bedroomSelectorLayout);
         mLocationSelectorLayout=(LinearLayout)findViewById(R.id.locationSelectorLayout);
@@ -46,6 +56,7 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         mClearAllBtn=(Button)findViewById(R.id.clearAllBtn);
         mApplyBtn=(Button)findViewById(R.id.appyFilterBtn);
 
+        mPlotFloorValue=(TextView)findViewById(R.id.plotFloorValue);
         mSocietyValue=(TextView)findViewById(R.id.societyValue);
         mBedroomValue=(TextView)findViewById(R.id.bedroomValue);
         mLocationValueTxt=(TextView)findViewById(R.id.locationValue);
@@ -68,6 +79,7 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
 
         mDb=dbHelper.getReadableDatabase();
 
+
         mLocationSelectorLayout.setOnClickListener(this);
         mPostedBySelectorLayout.setOnClickListener(this);
         mPktSelectorLayout.setOnClickListener(this);
@@ -79,6 +91,7 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         mApplyBtn.setOnClickListener(this);
         mClearAllBtn.setOnClickListener(this);
         mBedroomSelector.setOnClickListener(this);
+        mPlotFloorSelector.setOnClickListener(this);
         mSocietySelector.setOnClickListener(this);
     }
 
@@ -166,20 +179,21 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                 showDialog(areaTitle,5,mAdapter);
                 break;
             case R.id.priceSelectorLayout:
-                String priceTitle = "Select Price";
-                if (mAdapter!=null){
-                    mAdapter.clear();
-                }
-                final String priceQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_PRICE + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + " ; ";
-                Cursor cursorPrice = mDb.rawQuery(priceQuery,null);
-                if (cursorPrice.moveToFirst()){
-                    do {
-
-                        mAdapter.add(cursorPrice.getString(cursorPrice.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PRICE)));
-
-                    }while (cursorPrice.moveToNext());
-                }
-                showDialog(priceTitle,6,mAdapter);
+//                String priceTitle = "Select Price";
+//                if (mAdapter!=null){
+//                    mAdapter.clear();
+//                }
+//                final String priceQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_PRICE + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + " ; ";
+//                Cursor cursorPrice = mDb.rawQuery(priceQuery,null);
+//                if (cursorPrice.moveToFirst()){
+//                    do {
+//
+//                        mAdapter.add(cursorPrice.getString(cursorPrice.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PRICE)));
+//
+//                    }while (cursorPrice.moveToNext());
+//                }
+//                showDialog(priceTitle,6,mAdapter);
+                showPriceDialog();
                 break;
             case R.id.postedBySelectorLayout:
                 String postedTitle = "Posted By";
@@ -241,6 +255,14 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 showDialog(societyTitle,10,mAdapter);
                 break;
+            case R.id.plotFloorSelectorLayout:
+                String plotFLoorTitle = "Plot or Floor";
+                if (mAdapter!=null)
+                    mAdapter.clear();
+
+                mAdapter.add("Plot");
+                mAdapter.add("Floor");
+                showDialog(plotFLoorTitle,11,mAdapter);
 
             case R.id.clearAllBtn:
                 mAreaValueTxt.setText("");
@@ -264,23 +286,56 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-    private void showDialog(String pktTitle, final int flag, final ArrayAdapter<String> mAdapter) {
+    private void showPriceDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final View dialogView = LayoutInflater.from(this).inflate(R.layout.content_price_filter,null);
+       //Button submitBtn = (Button)findViewById(R.id.submitBtn);
+
+        builder.setView(dialogView);
+        final android.support.design.widget.TextInputEditText minPrice = (android.support.design.widget.TextInputEditText)dialogView.findViewById(R.id.minPrice);
+        final android.support.design.widget.TextInputEditText maxPrice = (android.support.design.widget.TextInputEditText)dialogView.findViewById(R.id.maxPrice);
+
+        builder.setTitle("Set Price");
+        builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
 
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(pktTitle);
+                String max = maxPrice.getText().toString();
+                String min = minPrice.getText().toString();
+                if (max.equals("") || min.equals("")){
+                    Toast.makeText(getApplicationContext(),"empty fields",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                stringBuilder.append(" "+ PropertyContract.PropertyEntry.COLUMN_PRICE+" >= \'"+ min).
+                        append("\' and "+ PropertyContract.PropertyEntry.COLUMN_PRICE+" <= \'"+max+"\' and ");
+                mPriceValueTxt.setText("Rs "+min + " To Rs. "+max);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                     dialog.dismiss();
+            }
+        });
+        AlertDialog al = builder.create();
+        al.show();
 
         // Cursor cursor = mDb.query(PropertyContract.PropertyEntry.TABLE_NAME,new String[PropertyContract.PropertyEntry.COLUMN_PKT])
 
 
 
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+
+    }
+
+
+    private void showDialog(String pktTitle, final int flag, final ArrayAdapter<String> mAdapter) {
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
 
         builder.setAdapter(mAdapter, new DialogInterface.OnClickListener() {
             @Override
@@ -325,6 +380,11 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                         case 10:mSocietyValue.setText(pktString);
                             stringBuilder.append( " "+PropertyContract.PropertyEntry.COLUMN_SOCIETY + " = \'").append(pktString).append("' and");
                             break;
+                        case 11:mPlotFloorValue.setText(pktString);
+                            if (pktString.equals("Plot"))
+                                stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_FLOOR + " =\'Plot' and");
+                            else
+                                stringBuilder.append(" not "+ PropertyContract.PropertyEntry.COLUMN_FLOOR + " =\'Plot\' and");
 
                     }
                 }

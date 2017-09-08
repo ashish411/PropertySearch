@@ -112,12 +112,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         startActivity(intent);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Cursor cursor = getAllProperties();
-        mAdapter.swapCursor(cursor);
-    }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -34,7 +34,7 @@
                     android:layout_marginBottom="8dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginTop="8dp"
-                    android:text="Sector / Location:"
+                    android:text="Sector:"
                     android:textColor="#000"
                     android:textSize="20sp" />
 
@@ -100,7 +100,7 @@
                     android:layout_marginBottom="8dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginTop="8dp"
-                    android:text="Plot/Flat No:"
+                    android:text="Flat No:"
                     android:textColor="#000"
                     android:textSize="20sp" />
 
@@ -147,6 +147,42 @@
                     android:layout_marginTop="8dp"
                     android:textSize="18sp" />
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/plotFloorSelectorLayout"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/box"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/plotFloorSelector"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginTop="8dp"
+                    android:text="Plot/Floor:"
+                    android:textColor="#000"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/plotFloorValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginTop="8dp"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+
             <LinearLayout
                 android:id="@+id/bedroomSelectorLayout"
                 android:layout_width="match_parent"
@@ -166,7 +202,7 @@
                     android:layout_marginBottom="8dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginTop="8dp"
-                    android:text="Bedroom:"
+                    android:text="Bedroom/Plot:"
                     android:textColor="#000"
                     android:textSize="20sp" />
 
@@ -198,7 +234,7 @@
                     android:layout_marginBottom="8dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginTop="8dp"
-                    android:text="Floor No:"
+                    android:text="Floor No/Plot:"
                     android:textColor="#000"
                     android:textSize="20sp" />
 

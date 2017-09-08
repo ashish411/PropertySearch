@@ -23,5 +23,7 @@ public class PropertyContract {
         public static final String COLUMN_BEDROOM = "bedrooms";
         public static final String COLUMN_SOCIETY = "society";
         public static final String COLUMN_REMARKS = "remarks";
+        public static final String COLUMN_DEALER_NAME = "dealerName";
+        public static final String NEW_TABLE_NAME = "property2";
     }
 }

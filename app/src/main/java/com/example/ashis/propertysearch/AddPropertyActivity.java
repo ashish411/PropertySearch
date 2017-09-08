@@ -16,6 +16,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -28,8 +30,9 @@ import com.example.ashis.propertysearch.data.PropertyDbHelper;
 public class AddPropertyActivity extends AppCompatActivity {
 
     private android.support.design.widget.TextInputEditText pktEditText,plotEditTxt, sectorEditTxt,
-            floorEditTxt,areaEditTxt,priceEditTxt,notesEditTxt,mLocationEditText,mBedroomEditText,
-            mSocietyEditText,mRemarksEditText;
+            areaEditTxt,priceEditTxt,notesEditTxt,mLocationEditText,mBedroomEditText,
+            mSocietyEditText,mRemarksEditText,mDealerNameEditTxt;
+    private AutoCompleteTextView floorEditTxt;
     private Button mSaveBtn;
     private SQLiteDatabase mDb;
     private Switch mSwitchDealer;
@@ -47,7 +50,10 @@ public class AddPropertyActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
+        ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(AddPropertyActivity.this,
+                android.R.layout.simple_dropdown_item_1line,new String[]{"Plot"});
 
+        mDealerNameEditTxt=(TextInputEditText)findViewById(R.id.editDealerName);
         mRemarksEditText=(TextInputEditText)findViewById(R.id.editRemarks);
         mSocietyEditText=(TextInputEditText)findViewById(R.id.editSociety);
         mBedroomEditText = (TextInputEditText)findViewById(R.id.editBedroom);
@@ -56,14 +62,14 @@ public class AddPropertyActivity extends AppCompatActivity {
         pktEditText=(android.support.design.widget.TextInputEditText)findViewById(R.id.editPkt);
         plotEditTxt=(android.support.design.widget.TextInputEditText)findViewById(R.id.editPlot);
         sectorEditTxt =(android.support.design.widget.TextInputEditText)findViewById(R.id.editSector);
-        floorEditTxt=(android.support.design.widget.TextInputEditText)findViewById(R.id.editFloor);
+        floorEditTxt=(AutoCompleteTextView)findViewById(R.id.editFloor);
         areaEditTxt=(android.support.design.widget.TextInputEditText)findViewById(R.id.editSize);
         priceEditTxt=(android.support.design.widget.TextInputEditText)findViewById(R.id.editPrice);
         notesEditTxt=(android.support.design.widget.TextInputEditText)findViewById(R.id.editNotes);
         mSaveBtn=(Button)findViewById(R.id.save_btn);
-
+        floorEditTxt.setAdapter(mAdapter);
+        floorEditTxt.setThreshold(-1);
         originalKeyListner = notesEditTxt.getKeyListener();
-        notesEditTxt.setKeyListener(null);
 
         mSwitchDealer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -106,6 +112,7 @@ public class AddPropertyActivity extends AppCompatActivity {
                 mBedroomEditText.setText(cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_BEDROOM)));
                 mSocietyEditText.setText(cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SOCIETY)));
                 mRemarksEditText.setText(cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_REMARKS)));
+                mDealerNameEditTxt.setText(cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_DEALER_NAME)));
                 int count = cursor.getInt(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_DEALER));
                 if (count == 1){
                     mSwitchDealer.setChecked(true);
@@ -128,12 +135,17 @@ public class AddPropertyActivity extends AppCompatActivity {
                         String bedroomString = mBedroomEditText.getText().toString();
                         String socityString = mSocietyEditText.getText().toString();
                         String remarkString = mRemarksEditText.getText().toString();
+                        String dealerNameString = mDealerNameEditTxt.getText().toString();
                         String selectionQury = PropertyContract.PropertyEntry.COLUMN_SECTOR +" =? AND "+
                                 PropertyContract.PropertyEntry.COLUMN_PKT +" =? AND "+
                                 PropertyContract.PropertyEntry.COLUMN_PLOT +" =? AND "+
                                 PropertyContract.PropertyEntry.COLUMN_AREA +" =? AND "+
                                 PropertyContract.PropertyEntry.COLUMN_FLOOR +" =? AND "+
                                 PropertyContract.PropertyEntry.COLUMN_BEDROOM +" =? AND "+
+                                PropertyContract.PropertyEntry.COLUMN_NOTES +" =? AND "+
+                                PropertyContract.PropertyEntry.COLUMN_REMARKS +" =? AND "+
+                                PropertyContract.PropertyEntry.COLUMN_SOCIETY +" =? AND "+
+                                PropertyContract.PropertyEntry.COLUMN_LOCATION +" =? AND "+
                                 PropertyContract.PropertyEntry.COLUMN_PRICE +" =?";
 
                         String[] selectionArgsQuery = new String[]{sectorString,pktString,plotString,
@@ -191,6 +203,7 @@ public class AddPropertyActivity extends AppCompatActivity {
                         values.put(PropertyContract.PropertyEntry.COLUMN_BEDROOM,bedroomString);
                         values.put(PropertyContract.PropertyEntry.COLUMN_SOCIETY,socityString);
                         values.put(PropertyContract.PropertyEntry.COLUMN_REMARKS,remarkString);
+                        values.put(PropertyContract.PropertyEntry.COLUMN_DEALER_NAME,dealerNameString);
 
                         if (flagId==1) {
                             int updatedRow = mDb.update(PropertyContract.PropertyEntry.TABLE_NAME, values, PropertyContract.PropertyEntry._ID + " = " + rowId, null);
@@ -217,6 +230,7 @@ public class AddPropertyActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 
+
                     String pktString = pktEditText.getText().toString();
                     String plotString = plotEditTxt.getText().toString();
                     String floorString = floorEditTxt.getText().toString();
@@ -228,15 +242,17 @@ public class AddPropertyActivity extends AppCompatActivity {
                     String bedroomString = mBedroomEditText.getText().toString();
                     String socityString = mSocietyEditText.getText().toString();
                     String remarkString = mRemarksEditText.getText().toString();
-
+                    String dealerNameString = mDealerNameEditTxt.getText().toString();
                     if (sectorString.isEmpty()||pktString.isEmpty()||plotString.isEmpty()||
-                            areaString.isEmpty()||floorString.isEmpty()||bedroomString.isEmpty()||
+                            areaString.isEmpty()||floorString.isEmpty()||
                             priceString.isEmpty()){
                         Toast.makeText(AddPropertyActivity.this,"Please Enter all the details",Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     mDb = mDbHelper.getWritableDatabase();
+                    if (bedroomString.isEmpty())
+                        bedroomString="Plot";
 
                     if (pktString.isEmpty() && plotString.isEmpty() && floorString.isEmpty() &&
                             areaString.isEmpty() && priceString.isEmpty() && notesString.isEmpty() &&
@@ -271,6 +287,10 @@ public class AddPropertyActivity extends AppCompatActivity {
                             PropertyContract.PropertyEntry.COLUMN_AREA +" =? AND "+
                             PropertyContract.PropertyEntry.COLUMN_FLOOR +" =? AND "+
                             PropertyContract.PropertyEntry.COLUMN_BEDROOM +" =? AND "+
+                            PropertyContract.PropertyEntry.COLUMN_NOTES +" =? AND "+
+                            PropertyContract.PropertyEntry.COLUMN_REMARKS +" =? AND "+
+                            PropertyContract.PropertyEntry.COLUMN_SOCIETY +" =? AND "+
+                            PropertyContract.PropertyEntry.COLUMN_LOCATION +" =? AND "+
                             PropertyContract.PropertyEntry.COLUMN_PRICE +" =?";
 
                     String[] selectionArgsQuery = new String[]{sectorString,pktString,plotString,
@@ -298,6 +318,7 @@ public class AddPropertyActivity extends AppCompatActivity {
                     values.put(PropertyContract.PropertyEntry.COLUMN_BEDROOM,bedroomString);
                     values.put(PropertyContract.PropertyEntry.COLUMN_SOCIETY,socityString);
                     values.put(PropertyContract.PropertyEntry.COLUMN_REMARKS,remarkString);
+                    values.put(PropertyContract.PropertyEntry.COLUMN_DEALER_NAME,dealerNameString);
                     long id = mDb.insert(PropertyContract.PropertyEntry.TABLE_NAME, null, values);
                     Toast.makeText(getApplicationContext(),"Property Added Successfully",Toast.LENGTH_SHORT).show();
 

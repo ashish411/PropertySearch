@@ -72,9 +72,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             floor+="st";
         else if (floor.equals("2"))
             floor+="nd";
-        else if (!floor.equals("Plot"))
+        else if (floor.equals("3"))
             floor+="rd";
-
+        else if (floor.equals("g")||floor.equals("G"))
+            floor+="rnd";
+        else if (!floor.equals("Plot"))
+            floor+="th";
 
 
         if (!bedroom.equals("Plot")){
@@ -121,7 +124,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private TextView mSectorTxt, mPlotTxt, mPriceTxt, mRowInfoTxt;
+        private TextView mRowInfoTxt;
 
         public MyViewHolder(View itemView) {
             super(itemView);
