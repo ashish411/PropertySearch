@@ -146,10 +146,12 @@ public class AddPropertyActivity extends AppCompatActivity {
                                 PropertyContract.PropertyEntry.COLUMN_REMARKS +" =? AND "+
                                 PropertyContract.PropertyEntry.COLUMN_SOCIETY +" =? AND "+
                                 PropertyContract.PropertyEntry.COLUMN_LOCATION +" =? AND "+
-                                PropertyContract.PropertyEntry.COLUMN_PRICE +" =?";
+                                PropertyContract.PropertyEntry.COLUMN_PRICE +" =? AND "+
+                                PropertyContract.PropertyEntry.COLUMN_DEALER_NAME+" =?";
 
                         String[] selectionArgsQuery = new String[]{sectorString,pktString,plotString,
-                                areaString,floorString,bedroomString,priceString};
+                                areaString,floorString,bedroomString,notesString,remarkString,
+                                socityString,locationString,priceString,dealerNameString};
 
                         Cursor cursor = mDb.query(PropertyContract.PropertyEntry.TABLE_NAME,null
                                 ,selectionQury,selectionArgsQuery,null,null,null);
@@ -281,7 +283,7 @@ public class AddPropertyActivity extends AppCompatActivity {
                         socityString="None";
                     }
 
-                    String selectionQury = PropertyContract.PropertyEntry.COLUMN_SECTOR +" =? AND "+
+                   String selectionQury = PropertyContract.PropertyEntry.COLUMN_SECTOR +" =? AND "+
                             PropertyContract.PropertyEntry.COLUMN_PKT +" =? AND "+
                             PropertyContract.PropertyEntry.COLUMN_PLOT +" =? AND "+
                             PropertyContract.PropertyEntry.COLUMN_AREA +" =? AND "+
@@ -291,10 +293,12 @@ public class AddPropertyActivity extends AppCompatActivity {
                             PropertyContract.PropertyEntry.COLUMN_REMARKS +" =? AND "+
                             PropertyContract.PropertyEntry.COLUMN_SOCIETY +" =? AND "+
                             PropertyContract.PropertyEntry.COLUMN_LOCATION +" =? AND "+
-                            PropertyContract.PropertyEntry.COLUMN_PRICE +" =?";
+                            PropertyContract.PropertyEntry.COLUMN_PRICE +" =? AND "+
+                            PropertyContract.PropertyEntry.COLUMN_DEALER_NAME+" =?";
+
 
                     String[] selectionArgsQuery = new String[]{sectorString,pktString,plotString,
-                            areaString,floorString,bedroomString,priceString};
+                            areaString,floorString,bedroomString,priceString,dealerNameString};
 
                     Cursor cursor = mDb.query(PropertyContract.PropertyEntry.TABLE_NAME,null
                     ,selectionQury,selectionArgsQuery,null,null,null);

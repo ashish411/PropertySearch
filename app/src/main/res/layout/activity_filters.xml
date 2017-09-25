@@ -316,6 +316,7 @@
                     android:textSize="18sp" />
             </LinearLayout>
 
+
             <LinearLayout
                 android:id="@+id/locationSelectorLayout"
                 android:layout_width="match_parent"
