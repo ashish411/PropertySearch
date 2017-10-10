@@ -99,7 +99,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 boolean isDeleted = removeProperty(id);
 
                 Log.i(MainActivity.class.getSimpleName(), "Row deleted: " + isDeleted);
-                mAdapter.swapCursor(getAllProperties());
             }
         }).attachToRecyclerView(mRecyclerView);
 
@@ -179,9 +178,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             Calendar calendar = Calendar.getInstance();
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
             String formattedString = dateFormat.format(calendar.getTime());
-
-
-
             if (dir.mkdir())
                 Toast.makeText(this,"Data stored Successfully!",Toast.LENGTH_SHORT).show();
             File file = new File(dir,"PropDb " +formattedString+".txt");
@@ -222,25 +218,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 100) {
             if (resultCode == RESULT_OK) {
-//                String pktSTring = data.getStringExtra("pktValue");
-//                String plotString = data.getStringExtra("plotValue");
-//                String sectorString = data.getStringExtra("sectorValue");
-//                String floorString = data.getStringExtra("floorValue");
-//                String areaString = data.getStringExtra("areaValue");
-//                String priceString = data.getStringExtra("priceValue");
-//                Log.i(MainActivity.class.getSimpleName(),pktSTring+" "+plotString+" "+sectorString+" "+floorString+" "+areaString+" "+priceString);
-//
-//                String query = "select * from "+ PropertyContract.PropertyEntry.TABLE_NAME+
-//                        " where " + PropertyContract.PropertyEntry.COLUMN_PKT + " = \""+ pktSTring+
-//                        "\" and " + PropertyContract.PropertyEntry.COLUMN_PLOT + " = \""+plotString+
-//                        "\" and " + PropertyContract.PropertyEntry.COLUMN_SECTOR + " = \""+sectorString+
-//                        "\" and " + PropertyContract.PropertyEntry.COLUMN_FLOOR + " = \""+floorString+
-//                        "\" and " + PropertyContract.PropertyEntry.COLUMN_AREA + " = \""+areaString+
-//                        "\" and " + PropertyContract.PropertyEntry.COLUMN_PRICE + " = \""+priceString +"\" ;";
-//
-//                Log.i(MainActivity.class.getSimpleName(),query);
-//
-//                Cursor cursor = mDb.rawQuery(query,null);
 
                 String queryResult = data.getStringExtra("resultString");
 
@@ -249,7 +226,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 Log.i(MainActivity.class.getSimpleName(), s);
 
                 Cursor cursor = mDb.rawQuery(s, null);
-                Log.i(MainActivity.class.getSimpleName(), "cursor count:" + cursor.getCount());
                 if (cursor.getCount() == 0) {
                     mRecyclerView.setVisibility(View.GONE);
                     textView.setVisibility(View.VISIBLE);
@@ -263,7 +239,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                             Log.i(MainActivity.class.getSimpleName(), cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_NOTES)));
                         } while (cursor.moveToNext());
                         mAdapter.swapCursor(cursor);
-                        //sssasa
                         mAdapter.notifyDataSetChanged();
                     }
                 }
@@ -277,14 +252,5 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 }
             }
         }
-//        else if (requestCode == 900){
-//                if (resultCode==RESULT_OK ||resultCode==RESULT_CANCELED) {
-//                    Cursor newCursor = getAllProperties();
-//                    if (newCursor.moveToFirst()) {
-//                        mAdapter.swapCursor(newCursor);
-//                        mAdapter.notifyDataSetChanged();
-//                    }
-//                }
-//        }
     }
 }

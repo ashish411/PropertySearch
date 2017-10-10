@@ -3,12 +3,15 @@ package com.example.ashis.propertysearch;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.ashis.propertysearch.data.PropertyContract;
+
+import java.util.ArrayList;
 
 /**
  * Created by ashis on 8/11/2017.
@@ -80,7 +83,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             floor+="th";
 
 
-        if (!bedroom.equals("Plot")){
+        if (!bedroom.equals("")){
             bedroom+=" bhk";
         }
 
@@ -93,10 +96,21 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 
         holder.itemView.setTag(rowNo);
-        holder.mRowInfoTxt.setText((position + 1) + ". " +
-                sector + "/" + pkt + "/"+plot + "/" +area + "/"+bedroom + "/"+floor + "/"+price +
-                " lac/"+societyName+"/"+remarks);
-
+        ArrayList<String> mList = new ArrayList<>();
+        mList.add(sector);
+        mList.add(pkt);
+        mList.add(plot);
+        mList.add(area);
+        mList.add(bedroom);
+        mList.add(floor);
+        mList.add(price + "lac");
+        mList.add(societyName);
+        mList.add(remarks);
+        String s = TextUtils.join("/",mList);
+//        holder.mRowInfoTxt.setText((position + 1) + ". " +
+//                sector + "/" + pkt + "/"+plot + "/" +area + "/"+bedroom + "/"+floor + "/"+price +
+//                " lac/"+societyName+"/"+remarks);
+        holder.mRowInfoTxt.setText((position+1)+"."+s);
 
 //        Property mProp = mList.get(position);
 //

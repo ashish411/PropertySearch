@@ -95,7 +95,7 @@ public class ShowProperty extends AppCompatActivity {
                 mRemarksTxt.setText(cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_REMARKS)));
                 int count = cursor.getInt(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_DEALER));
                 if (count == 1) {
-                    mPostedByTxt.setText("Dealer");
+                    mPostedByTxt.setText(cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_DEALER_NAME)));
                 } else if (count == 0) {
                     mPostedByTxt.setText("Me");
                 }

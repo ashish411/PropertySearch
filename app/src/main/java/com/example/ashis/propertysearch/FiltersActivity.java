@@ -5,9 +5,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -16,6 +20,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,61 +28,69 @@ import android.widget.Toast;
 import com.example.ashis.propertysearch.data.PropertyContract;
 import com.example.ashis.propertysearch.data.PropertyDbHelper;
 
-public class FiltersActivity extends AppCompatActivity implements View.OnClickListener{
-    private LinearLayout mPktSelectorLayout,mPlotSelectorLayout,mSectorSelectorLayout,mFloorSelectorLayout,
-            mAreaSelectorLayout,mPriceSelectorLayout,mPostedBySelectorLayout,
-            mLocationSelectorLayout,mBedroomSelector,mSocietySelector,mPlotFloorSelector;
-    private Button mClearAllBtn,mApplyBtn;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FiltersActivity extends AppCompatActivity implements View.OnClickListener {
+    private LinearLayout mPktSelectorLayout, mPlotSelectorLayout, mSectorSelectorLayout, mFloorSelectorLayout,
+            mAreaSelectorLayout, mPriceSelectorLayout, mPostedBySelectorLayout,mRemarksSelectorLayout,
+            mLocationSelectorLayout, mBedroomSelector, mSocietySelector, mPlotFloorSelector;
+    private Button mClearAllBtn, mApplyBtn;
     private SQLiteDatabase mDb;
-    private TextView mPkyValueTxt,mPlotValueTxt,mSectorValueTxt,mFloorValueTxt,mPostedByValue,
-            mAreaValueTxt,mPriceValueTxt,mLocationValueTxt,mBedroomValue,mSocietyValue,mPlotFloorValue;
+    private TextView mPkyValueTxt, mPlotValueTxt, mSectorValueTxt, mFloorValueTxt, mPostedByValue,
+            mAreaValueTxt, mPriceValueTxt, mLocationValueTxt, mBedroomValue, mSocietyValue,
+            mPlotFloorValue,mRemarksValue;
     private ArrayAdapter<String> mAdapter;
     private StringBuilder stringBuilder;
     private String queryString;
-
+    private FragmentManager fm;
+    private ArrayList<String> pktList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filters);
+        pktList = new ArrayList<>();
 
-        mPlotFloorSelector=(LinearLayout)findViewById(R.id.plotFloorSelectorLayout);
-        mSocietySelector=(LinearLayout)findViewById(R.id.societySelectorLayout);
-        mBedroomSelector=(LinearLayout)findViewById(R.id.bedroomSelectorLayout);
-        mLocationSelectorLayout=(LinearLayout)findViewById(R.id.locationSelectorLayout);
-        mPktSelectorLayout=(LinearLayout)findViewById(R.id.pktSelectorLayout);
-        mPlotSelectorLayout=(LinearLayout)findViewById(R.id.plotSelectorLayout);
-        mSectorSelectorLayout=(LinearLayout)findViewById(R.id.sectorSelectorLayout);
-        mFloorSelectorLayout=(LinearLayout)findViewById(R.id.floorSelectorLayout);
-        mAreaSelectorLayout=(LinearLayout)findViewById(R.id.areaSelectorLayout);
-        mPriceSelectorLayout=(LinearLayout)findViewById(R.id.priceSelectorLayout);
-        mPostedBySelectorLayout = (LinearLayout)findViewById(R.id.postedBySelectorLayout);
+        mRemarksSelectorLayout=(LinearLayout)findViewById(R.id.remarksSelectorLayout);
+        mPlotFloorSelector = (LinearLayout) findViewById(R.id.plotFloorSelectorLayout);
+        mSocietySelector = (LinearLayout) findViewById(R.id.societySelectorLayout);
+        mBedroomSelector = (LinearLayout) findViewById(R.id.bedroomSelectorLayout);
+        mLocationSelectorLayout = (LinearLayout) findViewById(R.id.locationSelectorLayout);
+        mPktSelectorLayout = (LinearLayout) findViewById(R.id.pktSelectorLayout);
+        mPlotSelectorLayout = (LinearLayout) findViewById(R.id.plotSelectorLayout);
+        mSectorSelectorLayout = (LinearLayout) findViewById(R.id.sectorSelectorLayout);
+        mFloorSelectorLayout = (LinearLayout) findViewById(R.id.floorSelectorLayout);
+        mAreaSelectorLayout = (LinearLayout) findViewById(R.id.areaSelectorLayout);
+        mPriceSelectorLayout = (LinearLayout) findViewById(R.id.priceSelectorLayout);
+        mPostedBySelectorLayout = (LinearLayout) findViewById(R.id.postedBySelectorLayout);
 
-        mClearAllBtn=(Button)findViewById(R.id.clearAllBtn);
-        mApplyBtn=(Button)findViewById(R.id.appyFilterBtn);
+        mClearAllBtn = (Button) findViewById(R.id.clearAllBtn);
+        mApplyBtn = (Button) findViewById(R.id.appyFilterBtn);
 
-        mPlotFloorValue=(TextView)findViewById(R.id.plotFloorValue);
-        mSocietyValue=(TextView)findViewById(R.id.societyValue);
-        mBedroomValue=(TextView)findViewById(R.id.bedroomValue);
-        mLocationValueTxt=(TextView)findViewById(R.id.locationValue);
-        mPostedByValue = (TextView)findViewById(R.id.postedByValue);
-        mPkyValueTxt=(TextView)findViewById(R.id.pktValue);
-        mPlotValueTxt=(TextView)findViewById(R.id.plotValue);
-        mSectorValueTxt=(TextView)findViewById(R.id.sectorValue);
-        mFloorValueTxt=(TextView)findViewById(R.id.floorValue);
-        mAreaValueTxt=(TextView)findViewById(R.id.areaValue);
-        mPriceValueTxt=(TextView)findViewById(R.id.priceValue);
+        mRemarksValue=(TextView)findViewById(R.id.remarksValue);
+        mPlotFloorValue = (TextView) findViewById(R.id.plotFloorValue);
+        mSocietyValue = (TextView) findViewById(R.id.societyValue);
+        mBedroomValue = (TextView) findViewById(R.id.bedroomValue);
+        mLocationValueTxt = (TextView) findViewById(R.id.locationValue);
+        mPostedByValue = (TextView) findViewById(R.id.postedByValue);
+        mPkyValueTxt = (TextView) findViewById(R.id.pktValue);
+        mPlotValueTxt = (TextView) findViewById(R.id.plotValue);
+        mSectorValueTxt = (TextView) findViewById(R.id.sectorValue);
+        mFloorValueTxt = (TextView) findViewById(R.id.floorValue);
+        mAreaValueTxt = (TextView) findViewById(R.id.areaValue);
+        mPriceValueTxt = (TextView) findViewById(R.id.priceValue);
 
-        mAdapter = new ArrayAdapter<String>(this,android.R.layout.select_dialog_singlechoice);
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_singlechoice);
 
-        stringBuilder=new StringBuilder();
-        queryString=" select * from " + PropertyContract.PropertyEntry.TABLE_NAME + " where ";
+        stringBuilder = new StringBuilder();
+        queryString = " select * from " + PropertyContract.PropertyEntry.TABLE_NAME + " where ";
 
         stringBuilder.append(queryString);
 
         PropertyDbHelper dbHelper = new PropertyDbHelper(this);
 
-        mDb=dbHelper.getReadableDatabase();
+        mDb = dbHelper.getReadableDatabase();
 
 
         mLocationSelectorLayout.setOnClickListener(this);
@@ -93,90 +106,103 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         mBedroomSelector.setOnClickListener(this);
         mPlotFloorSelector.setOnClickListener(this);
         mSocietySelector.setOnClickListener(this);
+        mRemarksSelectorLayout.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.pktSelectorLayout:
-                String pktTitle = "Select Pocket";
-                if (mAdapter!=null){
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
                 }
-                final String pktQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_PKT + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + " ; ";
-                Cursor cursorPkt = mDb.rawQuery(pktQuery,null);
-                if (cursorPkt.moveToFirst()){
+                String pktSelect = "Select Pocket";
+
+                final String pktQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_PKT
+                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY " +
+                        PropertyContract.PropertyEntry.COLUMN_PKT;
+                Cursor cursorPkt = mDb.rawQuery(pktQuery, null);
+                if (cursorPkt.moveToFirst()) {
                     do {
 
-                        mAdapter.add(cursorPkt.getString(cursorPkt.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PKT)));
+                        pktList.add(cursorPkt.getString(cursorPkt.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PKT)));
 
-                    }while (cursorPkt.moveToNext());
+                    } while (cursorPkt.moveToNext());
                 }
-                showDialog(pktTitle,1,mAdapter);
+                showFilterDialog(pktList, 1,pktSelect);
                 break;
             case R.id.plotSelectorLayout:
-                String plotTitle = "Select Plot";
-                if (mAdapter!=null){
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
                 }
-                final String plotQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_PLOT + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + " ; ";
-                Cursor cursorPlot = mDb.rawQuery(plotQuery,null);
-                if (cursorPlot.moveToFirst()){
+                String plotSelect = "Select Plot";
+                final String plotQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_PLOT
+                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY " +
+                        PropertyContract.PropertyEntry.COLUMN_PLOT;
+                Cursor cursorPlot = mDb.rawQuery(plotQuery, null);
+                if (cursorPlot.moveToFirst()) {
                     do {
 
-                        mAdapter.add(cursorPlot.getString(cursorPlot.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PLOT)));
+                        pktList.add(cursorPlot.getString(cursorPlot.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PLOT)));
 
-                    }while (cursorPlot.moveToNext());
+                    } while (cursorPlot.moveToNext());
                 }
-                showDialog(plotTitle,2,mAdapter);
+                showFilterDialog(pktList, 2,plotSelect);
                 break;
             case R.id.sectorSelectorLayout:
-                String sectorTitle = "Select Sector/Location";
-                if (mAdapter!=null){
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
                 }
-                final String sectorQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_SECTOR + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + " ; ";
-                Cursor cursorSector = mDb.rawQuery(sectorQuery,null);
-                if (cursorSector.moveToFirst()){
+                String secSelect = "Select Sector";
+                final String sectorQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_SECTOR
+                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY " +
+                        PropertyContract.PropertyEntry.COLUMN_SECTOR;
+                Cursor cursorSector = mDb.rawQuery(sectorQuery, null);
+                if (cursorSector.moveToFirst()) {
                     do {
 
-                        mAdapter.add(cursorSector.getString(cursorSector.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SECTOR)));
+                        pktList.add(cursorSector.getString(cursorSector.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SECTOR)));
 
-                    }while (cursorSector.moveToNext());
+                    } while (cursorSector.moveToNext());
                 }
-                showDialog(sectorTitle,3,mAdapter);
+                showFilterDialog(pktList, 3,secSelect);
                 break;
             case R.id.floorSelectorLayout:
-                String floorTitle = "Select Floor";
-                if (mAdapter!=null){
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
                 }
-                final String floorQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_FLOOR + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + " ; ";
-                Cursor cursorFloor = mDb.rawQuery(floorQuery,null);
-                if (cursorFloor.moveToFirst()){
+                String floorSelect = "Select floor";
+
+                final String floorQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_FLOOR
+                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY " +
+                        PropertyContract.PropertyEntry.COLUMN_FLOOR;
+                Cursor cursorFloor = mDb.rawQuery(floorQuery, null);
+                if (cursorFloor.moveToFirst()) {
                     do {
 
-                        mAdapter.add(cursorFloor.getString(cursorFloor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_FLOOR)));
+                        pktList.add(cursorFloor.getString(cursorFloor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_FLOOR)));
 
-                    }while (cursorFloor.moveToNext());
+                    } while (cursorFloor.moveToNext());
                 }
-                showDialog(floorTitle,4,mAdapter);
+                showFilterDialog(pktList, 4,floorSelect);
                 break;
             case R.id.areaSelectorLayout:
-                String areaTitle = "Select Area";
-                if (mAdapter!=null){
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
                 }
-                final String areaQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_AREA + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + " ; ";
-                Cursor cursorArea = mDb.rawQuery(areaQuery,null);
-                if (cursorArea.moveToFirst()){
+                String areSelect = "Select Area";
+                final String areaQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_AREA
+                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY " +
+                        PropertyContract.PropertyEntry.COLUMN_AREA;
+                Cursor cursorArea = mDb.rawQuery(areaQuery, null);
+                if (cursorArea.moveToFirst()) {
                     do {
 
-                        mAdapter.add(cursorArea.getString(cursorArea.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_AREA)));
+                        pktList.add(cursorArea.getString(cursorArea.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_AREA)));
 
-                    }while (cursorArea.moveToNext());
+                    } while (cursorArea.moveToNext());
                 }
-                showDialog(areaTitle,5,mAdapter);
+                showFilterDialog(pktList, 5,areSelect);
                 break;
             case R.id.priceSelectorLayout:
 //                String priceTitle = "Select Price";
@@ -196,74 +222,103 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                 showPriceDialog();
                 break;
             case R.id.postedBySelectorLayout:
-                String postedTitle = "Posted By";
-                if (mAdapter!=null){
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
                 }
-                mAdapter.add("Dealer");
-                mAdapter.add("Mine");
-                showDialog(postedTitle,7,mAdapter);
+                String postedTitle = "Posted By";
+                pktList.add("Mine");
+                final String dealerNameQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_DEALER_NAME +
+                        " from " + PropertyContract.PropertyEntry.TABLE_NAME + " order by " +
+                        PropertyContract.PropertyEntry.COLUMN_DEALER_NAME;
+                Cursor cursorDealerName = mDb.rawQuery(dealerNameQuery, null);
+                if (cursorDealerName.moveToFirst()) {
+                    do {
+                        pktList.add(cursorDealerName.getString(cursorDealerName.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_DEALER_NAME)));
+                    } while (cursorDealerName.moveToNext());
+                }
+                showFilterDialog(pktList, 7,postedTitle);
                 break;
             case R.id.locationSelectorLayout:
-                String locationTitle = "Select Location";
-                if (mAdapter!=null){
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
                 }
-                final String locationQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_LOCATION
-                        + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + ""+ " ; ";
-                Cursor cursorLocation = mDb.rawQuery(locationQuery,null);
-                if (cursorLocation.moveToFirst()){
+                String locationSelect = "Select Location";
+                final String locationQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_LOCATION
+                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY " +
+                        PropertyContract.PropertyEntry.COLUMN_LOCATION;
+                Cursor cursorLocation = mDb.rawQuery(locationQuery, null);
+                if (cursorLocation.moveToFirst()) {
                     do {
 
-                        mAdapter.add(cursorLocation.getString(cursorLocation.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_LOCATION)));
+                        pktList.add(cursorLocation.getString(cursorLocation.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_LOCATION)));
 
-                    }while (cursorLocation.moveToNext());
+                    } while (cursorLocation.moveToNext());
                 }
-                showDialog(locationTitle,8,mAdapter);
+                showFilterDialog(pktList, 8,locationSelect);
                 break;
             case R.id.bedroomSelectorLayout:
-                String bedroomTitle = "Bedroom";
-                if (mAdapter!=null){
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
                 }
-                final String bedroomQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_BEDROOM
-                        + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + ""+ " ; ";
-                Cursor cursorBedroom = mDb.rawQuery(bedroomQuery,null);
-                if (cursorBedroom.moveToFirst()){
+                String bedroomSelect = "Select No of Bedroom";
+                final String bedroomQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_BEDROOM
+                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY " +
+                        PropertyContract.PropertyEntry.COLUMN_BEDROOM;
+                Cursor cursorBedroom = mDb.rawQuery(bedroomQuery, null);
+                if (cursorBedroom.moveToFirst()) {
                     do {
 
-                        mAdapter.add(cursorBedroom.getString(cursorBedroom.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_BEDROOM)));
+                        pktList.add(cursorBedroom.getString(cursorBedroom.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_BEDROOM)));
 
-                    }while (cursorBedroom.moveToNext());
+                    } while (cursorBedroom.moveToNext());
                 }
-                showDialog(bedroomTitle,9,mAdapter);
+                showFilterDialog(pktList, 9,bedroomSelect);
                 break;
             case R.id.societySelectorLayout:
-                String societyTitle = "Society";
-                if (mAdapter!=null){
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
                 }
-                final String societyQuery = "select distinct "+ PropertyContract.PropertyEntry.COLUMN_SOCIETY
-                        + " from "+ PropertyContract.PropertyEntry.TABLE_NAME + ""+ " ; ";
-                Cursor cursorSociety = mDb.rawQuery(societyQuery,null);
-                if (cursorSociety.moveToFirst()){
+                String societySelect = "Select Society Name:";
+                final String societyQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_SOCIETY
+                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY "
+                        + PropertyContract.PropertyEntry.COLUMN_SOCIETY;
+                Cursor cursorSociety = mDb.rawQuery(societyQuery, null);
+                if (cursorSociety.moveToFirst()) {
                     do {
 
-                        mAdapter.add(cursorSociety.getString(cursorSociety.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SOCIETY)));
+                        pktList.add(cursorSociety.getString(cursorSociety.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SOCIETY)));
 
-                    }while (cursorSociety.moveToNext());
+                    } while (cursorSociety.moveToNext());
                 }
-                showDialog(societyTitle,10,mAdapter);
+                showFilterDialog(pktList, 10,societySelect);
                 break;
             case R.id.plotFloorSelectorLayout:
-                String plotFLoorTitle = "Plot or Floor";
-                if (mAdapter!=null)
-                    mAdapter.clear();
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
+                }
+                String plotFloorSelect = "Plot or Floor";
+                pktList.add("Plot");
+                pktList.add("Floor");
+                showFilterDialog(pktList, 11,plotFloorSelect);
+                break;
+            case R.id.remarksSelectorLayout:
+                if (!pktList.isEmpty()) {
+                    pktList.clear();
+                }
+                String remarksSelect = "Select Society Name:";
+                final String remarksQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_REMARKS
+                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY "
+                        + PropertyContract.PropertyEntry.COLUMN_REMARKS;
+                Cursor cursorRemarks = mDb.rawQuery(remarksQuery, null);
+                if (cursorRemarks.moveToFirst()) {
+                    do {
 
-                mAdapter.add("Plot");
-                mAdapter.add("Floor");
-                showDialog(plotFLoorTitle,11,mAdapter);
+                        pktList.add(cursorRemarks.getString(cursorRemarks.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_REMARKS)));
 
+                    } while (cursorRemarks.moveToNext());
+                }
+                showFilterDialog(pktList, 12,remarksSelect);
+                break;
             case R.id.clearAllBtn:
                 mAreaValueTxt.setText("");
                 mFloorValueTxt.setText("");
@@ -274,26 +329,36 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.appyFilterBtn:
                 Intent intent = new Intent();
-                intent.putExtra("areaValue",mAreaValueTxt.getText().toString());
-                intent.putExtra("floorValue",mFloorValueTxt.getText().toString());
-                intent.putExtra("pktValue",mPkyValueTxt.getText().toString());
-                intent.putExtra("plotValue",mPlotValueTxt.getText().toString());
-                intent.putExtra("priceValue",mPriceValueTxt.getText().toString());
-                intent.putExtra("sectorValue",mSectorValueTxt.getText().toString());
-                intent.putExtra("resultString",stringBuilder.toString());
-                setResult(RESULT_OK,intent);
+                intent.putExtra("areaValue", mAreaValueTxt.getText().toString());
+                intent.putExtra("floorValue", mFloorValueTxt.getText().toString());
+                intent.putExtra("pktValue", mPkyValueTxt.getText().toString());
+                intent.putExtra("plotValue", mPlotValueTxt.getText().toString());
+                intent.putExtra("priceValue", mPriceValueTxt.getText().toString());
+                intent.putExtra("sectorValue", mSectorValueTxt.getText().toString());
+                intent.putExtra("resultString", stringBuilder.toString());
+                setResult(RESULT_OK, intent);
                 finish();
         }
     }
 
+    private void showFilterDialog(ArrayList<String> mList, int flag,String title) {
+
+        Intent intent = new Intent(this, FilterList.class);
+        intent.putStringArrayListExtra("list", mList);
+        intent.putExtra("flag", flag);
+        intent.putExtra("title",title);
+        startActivityForResult(intent, 101);
+
+    }
+
     private void showPriceDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        final View dialogView = LayoutInflater.from(this).inflate(R.layout.content_price_filter,null);
-       //Button submitBtn = (Button)findViewById(R.id.submitBtn);
+        final View dialogView = LayoutInflater.from(this).inflate(R.layout.content_price_filter, null);
+        //Button submitBtn = (Button)findViewById(R.id.submitBtn);
 
         builder.setView(dialogView);
-        final android.support.design.widget.TextInputEditText minPrice = (android.support.design.widget.TextInputEditText)dialogView.findViewById(R.id.minPrice);
-        final android.support.design.widget.TextInputEditText maxPrice = (android.support.design.widget.TextInputEditText)dialogView.findViewById(R.id.maxPrice);
+        final android.support.design.widget.TextInputEditText minPrice = (android.support.design.widget.TextInputEditText) dialogView.findViewById(R.id.minPrice);
+        final android.support.design.widget.TextInputEditText maxPrice = (android.support.design.widget.TextInputEditText) dialogView.findViewById(R.id.maxPrice);
 
         builder.setTitle("Set Price");
         builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
@@ -303,20 +368,20 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
 
                 String max = maxPrice.getText().toString();
                 String min = minPrice.getText().toString();
-                if (max.equals("") || min.equals("")){
-                    Toast.makeText(getApplicationContext(),"empty fields",Toast.LENGTH_SHORT).show();
+                if (max.equals("") || min.equals("")) {
+                    Toast.makeText(getApplicationContext(), "empty fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                stringBuilder.append(" "+ PropertyContract.PropertyEntry.COLUMN_PRICE+" >= \'"+ min).
-                        append("\' and "+ PropertyContract.PropertyEntry.COLUMN_PRICE+" <= \'"+max+"\' and ");
-                mPriceValueTxt.setText("Rs "+min + " To Rs. "+max);
+                stringBuilder.append(" " + PropertyContract.PropertyEntry.COLUMN_PRICE + " >= \'" + min).
+                        append("\' and " + PropertyContract.PropertyEntry.COLUMN_PRICE + " <= \'" + max + "\' and ");
+                mPriceValueTxt.setText("Rs " + min + " To Rs. " + max);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                     dialog.dismiss();
+                dialog.dismiss();
             }
         });
         AlertDialog al = builder.create();
@@ -325,72 +390,92 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         // Cursor cursor = mDb.query(PropertyContract.PropertyEntry.TABLE_NAME,new String[PropertyContract.PropertyEntry.COLUMN_PKT])
 
 
-
-
-
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
-    private void showDialog(String pktTitle, final int flag, final ArrayAdapter<String> mAdapter) {
+        super.onActivityResult(requestCode, resultCode, intent);
 
+        if (requestCode == 101) {
+            if (resultCode == RESULT_OK) {
+                int flag = intent.getIntExtra("flag", 0);
+                String[] data = intent.getStringArrayExtra("list");
+                String joined = TextUtils.join(",",data);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                switch (flag) {
+                    case 1:
+                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_PKT+" IN (")
+                            .append(joined).append(") and");
+                        mPkyValueTxt.setText(joined);
+                        break;
+                    case 2:
+                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_PLOT+" IN (")
+                                .append(joined).append(") and");
+                        mPlotValueTxt.setText(joined);
+                        break;
+                    case 3:
+                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_SECTOR +" IN (")
+                                .append(joined).append(") and");
+                        mSectorValueTxt.setText(joined);
+                        break;
+                    case 4:
+                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_FLOOR +" IN (")
+                                .append(joined).append(") and");
+                        mFloorValueTxt.setText(joined);
+                        break;
+                    case 5:
 
+                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_AREA+" IN (")
+                                .append(joined).append(") and");
+                        mAreaValueTxt.setText(joined);
+                        break;
 
-        builder.setAdapter(mAdapter, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String pktString = mAdapter.getItem(which);
+                    case 7:
+                        if (joined.contains("\'Mine\'")) {
+                            stringBuilder.append(" " + PropertyContract.PropertyEntry.COLUMN_DEALER + " = 0").append(" and");
+                        } else {
+                            stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_DEALER_NAME  +" IN (")
+                                    .append(joined).append(") and");
+                        }
+                        mPostedByValue.setText(joined);
+                        break;
+                    case 8:
 
-                dialog.dismiss();
+                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_LOCATION  +" IN (")
+                                .append(joined).append(") and");
+                        mLocationValueTxt.setText(joined);
+                        break;
+                    case 9:
 
-                if (!pktString.equals("") || pktString!=null){
-                    switch (flag){
-                        case 1:mPkyValueTxt.setText(pktString);
-                            stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_PKT + " = \'").append(pktString).append("' and");
-                            break;
-                        case 2:mPlotValueTxt.setText(pktString);
-                            stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_PLOT + " = \'").append(pktString).append("' and");
-                            break;
-                        case 3:mSectorValueTxt.setText(pktString);
-                            stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_SECTOR + " = \'").append(pktString).append("' and");
-                            break;
-                        case 4:mFloorValueTxt.setText(pktString);
-                            stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_FLOOR + " = \'").append(pktString).append("' and");
-                            break;
-                        case 5:mAreaValueTxt.setText(pktString);
-                            stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_AREA + " = \'").append(pktString).append("' and");
-                            break;
-                        case 6:mPriceValueTxt.setText(pktString);
-                            stringBuilder.append( " "+PropertyContract.PropertyEntry.COLUMN_PRICE + " = \'").append(pktString).append("' and");
-                            break;
-                        case 7:mPostedByValue.setText(pktString);
-                            if (pktString.equals("Dealer")){
-                                stringBuilder.append( " "+PropertyContract.PropertyEntry.COLUMN_DEALER + " = 1").append(" and");
-                            } else {
-                                stringBuilder.append( " "+PropertyContract.PropertyEntry.COLUMN_DEALER + " = 0 ").append(" and");
-                            }
-                            break;
-                        case 8:mLocationValueTxt.setText(pktString);
-                            stringBuilder.append( " "+PropertyContract.PropertyEntry.COLUMN_LOCATION + " = \'").append(pktString).append("' and");
-                            break;
-                        case 9:mBedroomValue.setText(pktString);
-                            stringBuilder.append( " "+PropertyContract.PropertyEntry.COLUMN_BEDROOM + " = \'").append(pktString).append("' and");
-                            break;
-                        case 10:mSocietyValue.setText(pktString);
-                            stringBuilder.append( " "+PropertyContract.PropertyEntry.COLUMN_SOCIETY + " = \'").append(pktString).append("' and");
-                            break;
-                        case 11:mPlotFloorValue.setText(pktString);
-                            if (pktString.equals("Plot"))
-                                stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_FLOOR + " =\'Plot' and");
-                            else
-                                stringBuilder.append(" not "+ PropertyContract.PropertyEntry.COLUMN_FLOOR + " =\'Plot\' and");
+                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_BEDROOM  +" IN (")
+                                .append(joined).append(") and");
+                        mBedroomValue.setText(joined);
+                        break;
+                    case 10:
 
-                    }
+                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_SOCIETY  +" IN (")
+                                .append(joined).append(") and");
+                        mSocietyValue.setText(joined);
+                        break;
+                    case 11:
+                        mPlotFloorValue.setText(joined);
+                        if (joined.equals("\'Plot\'"))
+                            stringBuilder.append(" " + PropertyContract.PropertyEntry.COLUMN_FLOOR + " =\'Plot' and");
+                        else
+                            stringBuilder.append(" not " + PropertyContract.PropertyEntry.COLUMN_FLOOR + " =\'Plot\' and");
+                        break;
+                    case 12:
+
+                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_REMARKS+" IN (")
+                                .append(joined).append(") and");
+                        mRemarksValue.setText(joined);
+                        break;
                 }
             }
-        });
 
-        builder.show();
+        }
     }
 }
+
+

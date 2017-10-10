@@ -31,8 +31,8 @@ public class AddPropertyActivity extends AppCompatActivity {
 
     private android.support.design.widget.TextInputEditText pktEditText,plotEditTxt, sectorEditTxt,
             areaEditTxt,priceEditTxt,notesEditTxt,mLocationEditText,mBedroomEditText,
-            mSocietyEditText,mRemarksEditText,mDealerNameEditTxt;
-    private AutoCompleteTextView floorEditTxt;
+            mSocietyEditText,mRemarksEditText;
+    private AutoCompleteTextView floorEditTxt,mDealerNameEditTxt;
     private Button mSaveBtn;
     private SQLiteDatabase mDb;
     private Switch mSwitchDealer;
@@ -46,14 +46,26 @@ public class AddPropertyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_property);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        PropertyDbHelper helper = new PropertyDbHelper(this);
+        mDb=helper.getReadableDatabase();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
 
         ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(AddPropertyActivity.this,
                 android.R.layout.simple_dropdown_item_1line,new String[]{"Plot"});
 
-        mDealerNameEditTxt=(TextInputEditText)findViewById(R.id.editDealerName);
+        final ArrayAdapter<String> mDealerNameAdapter = new ArrayAdapter<String>(AddPropertyActivity.this,
+                android.R.layout.simple_list_item_1);
+        Cursor cursorDealerName = getDealerNames();
+        cursorDealerName.moveToFirst();
+            do {
+                mDealerNameAdapter.add(cursorDealerName.getString(cursorDealerName.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_DEALER_NAME)));
+            }while (cursorDealerName.moveToNext());
+
+
+        mDealerNameEditTxt=(AutoCompleteTextView)findViewById(R.id.editDealerName);
         mRemarksEditText=(TextInputEditText)findViewById(R.id.editRemarks);
         mSocietyEditText=(TextInputEditText)findViewById(R.id.editSociety);
         mBedroomEditText = (TextInputEditText)findViewById(R.id.editBedroom);
@@ -69,18 +81,25 @@ public class AddPropertyActivity extends AppCompatActivity {
         mSaveBtn=(Button)findViewById(R.id.save_btn);
         floorEditTxt.setAdapter(mAdapter);
         floorEditTxt.setThreshold(-1);
-        originalKeyListner = notesEditTxt.getKeyListener();
+        originalKeyListner = mDealerNameEditTxt.getKeyListener();
+
+        mDealerNameEditTxt.setEnabled(false);
 
         mSwitchDealer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked){
+                    mDealerNameEditTxt.setEnabled(true);
                     dealerValue = 1;
-                    notesEditTxt.setKeyListener(originalKeyListner);
-                    notesEditTxt.requestFocus();
+                    mDealerNameEditTxt.setKeyListener(originalKeyListner);
+                    mDealerNameEditTxt.requestFocus();
                     InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(notesEditTxt, InputMethodManager.SHOW_IMPLICIT);
+                    imm.showSoftInput(mDealerNameEditTxt, InputMethodManager.SHOW_IMPLICIT);
+                    mDealerNameEditTxt.setAdapter(mDealerNameAdapter);
+                    mDealerNameEditTxt.setThreshold(-1);
                 } else {
+                    mDealerNameEditTxt.setText("");
+                    mDealerNameEditTxt.setEnabled(false);
                     dealerValue = 0;
                 }
             }
@@ -95,8 +114,6 @@ public class AddPropertyActivity extends AppCompatActivity {
                 mSaveBtn.setText("Update");
             else if (flagId==2)
                 mSaveBtn.setText("Save");
-            PropertyDbHelper helper = new PropertyDbHelper(this);
-            mDb=helper.getReadableDatabase();
             final int rowId = getIntent().getIntExtra("rowId",200);
             if (rowId!=200){
                 Cursor cursor = getPropertyDetail(rowId);
@@ -161,35 +178,17 @@ public class AddPropertyActivity extends AppCompatActivity {
                             return;
                         }
 
-                        if (pktString.isEmpty())
-                            pktString="0";
-                        if (plotString.isEmpty()){
-                            plotString="0";
-                        }
-                        if (areaString.isEmpty())
-                            areaString="0";
-                        if (sectorString.isEmpty())
-                            sectorString="0";
-                        if (priceString.isEmpty())
-                            priceString="0";
+
                         if (locationString.isEmpty()){
                             locationString="Delhi";
                         }
 
-                        if (socityString.isEmpty()){
-                            socityString="None";
-                        }
 
-                        if (bedroomString.isEmpty()){
-                            bedroomString="Plot";
-                        }
 
-                        if(floorString.isEmpty()){
-                            floorString="Plot";
-                        }
-                        if (floorString.equals("Plot")){
 
-                        }
+
+
+
 
 
                         ContentValues values = new ContentValues();
@@ -253,35 +252,15 @@ public class AddPropertyActivity extends AppCompatActivity {
                     }
 
                     mDb = mDbHelper.getWritableDatabase();
-                    if (bedroomString.isEmpty())
-                        bedroomString="Plot";
 
                     if (pktString.isEmpty() && plotString.isEmpty() && floorString.isEmpty() &&
                             areaString.isEmpty() && priceString.isEmpty() && notesString.isEmpty() &&
-                            sectorString.isEmpty() && locationString.isEmpty() && bedroomString.isEmpty() &&
+                            sectorString.isEmpty() && locationString.isEmpty()  &&
                             socityString.isEmpty() && remarkString.isEmpty()){
                         Toast.makeText(getApplicationContext(),"Please enter Property Detail",Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    if (pktString.isEmpty())
-                        pktString="0";
-                    if (plotString.isEmpty()){
-                        plotString="0";
-                    }
-                   if (areaString.isEmpty())
-                        areaString="0";
-                    if (sectorString.isEmpty())
-                        sectorString="0";
-                    if (priceString.isEmpty())
-                        priceString="0";
-                    if (locationString.isEmpty()){
-                        locationString="Delhi";
-                    }
-
-                    if (socityString.isEmpty()){
-                        socityString="None";
-                    }
 
                    String selectionQury = PropertyContract.PropertyEntry.COLUMN_SECTOR +" =? AND "+
                             PropertyContract.PropertyEntry.COLUMN_PKT +" =? AND "+
@@ -340,6 +319,10 @@ public class AddPropertyActivity extends AppCompatActivity {
 
     }
 
+    private Cursor getDealerNames(){
+        return mDb.query(true, PropertyContract.PropertyEntry.TABLE_NAME,new String[]{PropertyContract.PropertyEntry.COLUMN_DEALER_NAME},
+                null,null,null,null, PropertyContract.PropertyEntry.COLUMN_DEALER_NAME,null);
+    }
 
 
     private Cursor getPropertyDetail(int rowId) {

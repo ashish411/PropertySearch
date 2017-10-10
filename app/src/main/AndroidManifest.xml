@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.ashis.propertysearch">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -33,9 +33,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-        <activity android:name=".ShowProperty"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:label="Property"></activity>
+        <activity
+            android:name=".ShowProperty"
+            android:label="Property"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".FilterList"
+            android:parentActivityName=".FiltersActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".FiltersActivity"/>
+        </activity>
     </application>
 
 </manifest>
