@@ -2,7 +2,8 @@ package com.example.ashis.propertysearch;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v7.widget.RecyclerView;
+import android.graphics.Color;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,11 +56,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         String sector = mCursor.getString(mCursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SECTOR));
         String pkt = mCursor.getString(mCursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PKT));
         String area = mCursor.getString(mCursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_AREA));
-        String floor = mCursor.getString(mCursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_FLOOR));
-        String societyName = mCursor.getString(mCursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SOCIETY));
-        String bedroom = mCursor.getString(mCursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_BEDROOM));
         String remarks = mCursor.getString(mCursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_REMARKS));
         int count = mCursor.getInt(mCursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_DEALER));
+        int colour = mCursor.getInt(mCursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_COLOR));
+        holder.itemView.setBackgroundColor(Utility.getColor(colour));
+        if (colour==1 || colour==3){
+            holder.mRowInfoTxt.setTextColor(Color.WHITE);
+        }
+        else {
+            holder.mRowInfoTxt.setTextColor(Color.BLACK);
+        }
 
 
 
@@ -71,21 +77,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         }
 
 
-        if (floor.equals("1"))
-            floor+="st";
-        else if (floor.equals("2"))
-            floor+="nd";
-        else if (floor.equals("3"))
-            floor+="rd";
-        else if (floor.equals("g")||floor.equals("G"))
-            floor+="rnd";
-        else if (!floor.equals("Plot"))
-            floor+="th";
-
-
-        if (!bedroom.equals("")){
-            bedroom+=" bhk";
-        }
 
         int size = Integer.parseInt(area);
         if (size>400){
@@ -101,10 +92,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         mList.add(pkt);
         mList.add(plot);
         mList.add(area);
-        mList.add(bedroom);
-        mList.add(floor);
         mList.add(price + "lac");
-        mList.add(societyName);
         mList.add(remarks);
         String s = TextUtils.join("/",mList);
 //        holder.mRowInfoTxt.setText((position + 1) + ". " +

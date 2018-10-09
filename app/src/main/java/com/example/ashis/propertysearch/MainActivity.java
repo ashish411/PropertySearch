@@ -9,20 +9,21 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,7 +48,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     //  private List<Property> mList;
     private RecyclerViewAdapter mAdapter;
     private Cursor cursor;
-    private TextView mFilterTxt,textView;
+    private TextView textView;
+    private Button mFilterBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +61,11 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         //  mList=new ArrayList<>();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        mFilterTxt = (TextView) findViewById(R.id.filterTextView);
+        mFilterBtn = (Button) findViewById(R.id.filterBtn);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new DividerItemDecoration(mRecyclerView.getContext(), DividerItemDecoration.VERTICAL));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         textView = (TextView)findViewById(R.id.emptyText);
-
 
         cursor = getAllProperties();
         mAdapter = new RecyclerViewAdapter(cursor, this, this);
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 startActivityForResult(intent, 666);
             }
         });
-        mFilterTxt.setOnClickListener(new View.OnClickListener() {
+        mFilterBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 //                startActivity(new Intent(MainActivity.this,FiltersActivity.class));
@@ -85,6 +86,15 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
             }
         });
+
+//        mSortByTxt.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Cursor cursor = mDb.query(PropertyContract.PropertyEntry.TABLE_NAME,null,null,null,
+//                        null,null, PropertyContract.PropertyEntry.COLUMN_DATE+" ASC ");
+//                mAdapter.swapCursor(cursor);
+//            }
+//        });
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
@@ -113,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     private Cursor getAllProperties() {
         PropertyDbHelper dbHelper = new PropertyDbHelper(this);
         mDb = dbHelper.getReadableDatabase();
+        Log.i(MainActivity.class.getSimpleName(),"current db version "+mDb.getVersion());
+
         return mDb.query(PropertyContract.PropertyEntry.TABLE_NAME, null, null, null, null, null, null, null);
     }
 
@@ -152,21 +164,20 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             String sector = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SECTOR));
             String size = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_AREA));
             String pkt = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PKT));
-            String floor = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_FLOOR));
             String flatNo = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PLOT));
-            String bedroom = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_BEDROOM));
             String dealerName = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_DEALER_NAME));
             String price = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_PRICE));
             String notes = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_NOTES));
             String location = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_LOCATION));
             String remarks = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_REMARKS));
-            String societyName = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SOCIETY));
+            String isImp = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_IS_IMPORTANT));
+            String date = cursor.getString(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_DATE));
+            int colour = cursor.getInt(cursor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_COLOR));
             builder.append(id + "\t\t\tSector: ").append(sector).append("\t\t\t\t\t Size: ").append(size).append("\n")
-                    .append("\t\t\tPocket: ").append(pkt).append("\t\t\t\t\t Floor: ").append(floor).append("\n")
-                    .append("\t\t\tFlat No: ").append(flatNo).append("\t\t\t\t\t Bedroom: ").append(bedroom).append(" bhk\n")
                     .append("\t\t\tDealer Name: ").append(dealerName).append("\t\t\t\t\t Price: Rs").append(price).append(" lac\n")
                     .append("\t\t\tNotes: ").append(notes).append("\t\t\t\t\t Location: ").append(location).append("\n")
-                    .append("\t\t\tRemarks: ").append(remarks).append("\t\t\t\t\t Society Name: ").append(societyName)
+                    .append("\t\t\t Date: ").append(date).append("\t\t\t\t\t IsImp: ").append(isImp)
+                    .append("\t\t\t colour: ").append(colour).append("\n")
                     .append("\n\t\t\t\t\t"+"---------------x----------------"+"\t\t\n");
 
         }while (cursor.moveToNext());

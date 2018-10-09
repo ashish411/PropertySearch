@@ -5,10 +5,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -26,25 +26,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.ashis.propertysearch.data.PropertyContract;
-import com.example.ashis.propertysearch.data.PropertyDbHelper;
+import com.example.ashis.propertysearch.data.PropertyDbHelper;import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FiltersActivity extends AppCompatActivity implements View.OnClickListener {
-    private LinearLayout mPktSelectorLayout, mPlotSelectorLayout, mSectorSelectorLayout, mFloorSelectorLayout,
+    private LinearLayout mPktSelectorLayout, mPlotSelectorLayout, mSectorSelectorLayout,
             mAreaSelectorLayout, mPriceSelectorLayout, mPostedBySelectorLayout,mRemarksSelectorLayout,
-            mLocationSelectorLayout, mBedroomSelector, mSocietySelector, mPlotFloorSelector;
+            mLocationSelectorLayout;
     private Button mClearAllBtn, mApplyBtn;
     private SQLiteDatabase mDb;
     private TextView mPkyValueTxt, mPlotValueTxt, mSectorValueTxt, mFloorValueTxt, mPostedByValue,
-            mAreaValueTxt, mPriceValueTxt, mLocationValueTxt, mBedroomValue, mSocietyValue,
-            mPlotFloorValue,mRemarksValue;
-    private ArrayAdapter<String> mAdapter;
+            mAreaValueTxt, mPriceValueTxt, mLocationValueTxt,mRemarksValue;
     private StringBuilder stringBuilder;
     private String queryString;
-    private FragmentManager fm;
     private ArrayList<String> pktList;
+    private Switch mImpSwitch;
+    private String impValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,15 +51,12 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_filters);
         pktList = new ArrayList<>();
 
+        mImpSwitch=(Switch) findViewById(R.id.importantSwitch);
         mRemarksSelectorLayout=(LinearLayout)findViewById(R.id.remarksSelectorLayout);
-        mPlotFloorSelector = (LinearLayout) findViewById(R.id.plotFloorSelectorLayout);
-        mSocietySelector = (LinearLayout) findViewById(R.id.societySelectorLayout);
-        mBedroomSelector = (LinearLayout) findViewById(R.id.bedroomSelectorLayout);
         mLocationSelectorLayout = (LinearLayout) findViewById(R.id.locationSelectorLayout);
         mPktSelectorLayout = (LinearLayout) findViewById(R.id.pktSelectorLayout);
         mPlotSelectorLayout = (LinearLayout) findViewById(R.id.plotSelectorLayout);
         mSectorSelectorLayout = (LinearLayout) findViewById(R.id.sectorSelectorLayout);
-        mFloorSelectorLayout = (LinearLayout) findViewById(R.id.floorSelectorLayout);
         mAreaSelectorLayout = (LinearLayout) findViewById(R.id.areaSelectorLayout);
         mPriceSelectorLayout = (LinearLayout) findViewById(R.id.priceSelectorLayout);
         mPostedBySelectorLayout = (LinearLayout) findViewById(R.id.postedBySelectorLayout);
@@ -69,9 +65,6 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         mApplyBtn = (Button) findViewById(R.id.appyFilterBtn);
 
         mRemarksValue=(TextView)findViewById(R.id.remarksValue);
-        mPlotFloorValue = (TextView) findViewById(R.id.plotFloorValue);
-        mSocietyValue = (TextView) findViewById(R.id.societyValue);
-        mBedroomValue = (TextView) findViewById(R.id.bedroomValue);
         mLocationValueTxt = (TextView) findViewById(R.id.locationValue);
         mPostedByValue = (TextView) findViewById(R.id.postedByValue);
         mPkyValueTxt = (TextView) findViewById(R.id.pktValue);
@@ -81,7 +74,6 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         mAreaValueTxt = (TextView) findViewById(R.id.areaValue);
         mPriceValueTxt = (TextView) findViewById(R.id.priceValue);
 
-        mAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_singlechoice);
 
         stringBuilder = new StringBuilder();
         queryString = " select * from " + PropertyContract.PropertyEntry.TABLE_NAME + " where ";
@@ -98,15 +90,30 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         mPktSelectorLayout.setOnClickListener(this);
         mPlotSelectorLayout.setOnClickListener(this);
         mSectorSelectorLayout.setOnClickListener(this);
-        mFloorSelectorLayout.setOnClickListener(this);
         mAreaSelectorLayout.setOnClickListener(this);
         mPriceSelectorLayout.setOnClickListener(this);
         mApplyBtn.setOnClickListener(this);
         mClearAllBtn.setOnClickListener(this);
-        mBedroomSelector.setOnClickListener(this);
-        mPlotFloorSelector.setOnClickListener(this);
-        mSocietySelector.setOnClickListener(this);
         mRemarksSelectorLayout.setOnClickListener(this);
+
+        mImpSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+
+                    impValue = PropertyContract.PropertyEntry.COLUMN_IS_IMPORTANT + " = \'Important\'";
+                    stringBuilder.append(impValue + " and ");
+                    mImpSwitch.setEnabled(false);
+                }
+                else {
+                    impValue = PropertyContract.PropertyEntry.COLUMN_IS_IMPORTANT + " = \'Not Important\'";
+                    stringBuilder.append(impValue + " and ");
+                    mImpSwitch.setEnabled(false);
+                }
+            }
+        });
+
+
     }
 
     @Override
@@ -167,26 +174,8 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 showFilterDialog(pktList, 3,secSelect);
                 break;
-            case R.id.floorSelectorLayout:
-                if (!pktList.isEmpty()) {
-                    pktList.clear();
-                }
-                String floorSelect = "Select floor";
 
-                final String floorQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_FLOOR
-                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY " +
-                        PropertyContract.PropertyEntry.COLUMN_FLOOR;
-                Cursor cursorFloor = mDb.rawQuery(floorQuery, null);
-                if (cursorFloor.moveToFirst()) {
-                    do {
-
-                        pktList.add(cursorFloor.getString(cursorFloor.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_FLOOR)));
-
-                    } while (cursorFloor.moveToNext());
-                }
-                showFilterDialog(pktList, 4,floorSelect);
-                break;
-            case R.id.areaSelectorLayout:
+               case R.id.areaSelectorLayout:
                 if (!pktList.isEmpty()) {
                     pktList.clear();
                 }
@@ -256,51 +245,7 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 showFilterDialog(pktList, 8,locationSelect);
                 break;
-            case R.id.bedroomSelectorLayout:
-                if (!pktList.isEmpty()) {
-                    pktList.clear();
-                }
-                String bedroomSelect = "Select No of Bedroom";
-                final String bedroomQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_BEDROOM
-                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY " +
-                        PropertyContract.PropertyEntry.COLUMN_BEDROOM;
-                Cursor cursorBedroom = mDb.rawQuery(bedroomQuery, null);
-                if (cursorBedroom.moveToFirst()) {
-                    do {
 
-                        pktList.add(cursorBedroom.getString(cursorBedroom.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_BEDROOM)));
-
-                    } while (cursorBedroom.moveToNext());
-                }
-                showFilterDialog(pktList, 9,bedroomSelect);
-                break;
-            case R.id.societySelectorLayout:
-                if (!pktList.isEmpty()) {
-                    pktList.clear();
-                }
-                String societySelect = "Select Society Name:";
-                final String societyQuery = "select distinct " + PropertyContract.PropertyEntry.COLUMN_SOCIETY
-                        + " from " + PropertyContract.PropertyEntry.TABLE_NAME + " ORDER BY "
-                        + PropertyContract.PropertyEntry.COLUMN_SOCIETY;
-                Cursor cursorSociety = mDb.rawQuery(societyQuery, null);
-                if (cursorSociety.moveToFirst()) {
-                    do {
-
-                        pktList.add(cursorSociety.getString(cursorSociety.getColumnIndex(PropertyContract.PropertyEntry.COLUMN_SOCIETY)));
-
-                    } while (cursorSociety.moveToNext());
-                }
-                showFilterDialog(pktList, 10,societySelect);
-                break;
-            case R.id.plotFloorSelectorLayout:
-                if (!pktList.isEmpty()) {
-                    pktList.clear();
-                }
-                String plotFloorSelect = "Plot or Floor";
-                pktList.add("Plot");
-                pktList.add("Floor");
-                showFilterDialog(pktList, 11,plotFloorSelect);
-                break;
             case R.id.remarksSelectorLayout:
                 if (!pktList.isEmpty()) {
                     pktList.clear();
@@ -321,7 +266,6 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.clearAllBtn:
                 mAreaValueTxt.setText("");
-                mFloorValueTxt.setText("");
                 mPkyValueTxt.setText("");
                 mPlotValueTxt.setText("");
                 mPriceValueTxt.setText("");
@@ -330,7 +274,6 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.appyFilterBtn:
                 Intent intent = new Intent();
                 intent.putExtra("areaValue", mAreaValueTxt.getText().toString());
-                intent.putExtra("floorValue", mFloorValueTxt.getText().toString());
                 intent.putExtra("pktValue", mPkyValueTxt.getText().toString());
                 intent.putExtra("plotValue", mPlotValueTxt.getText().toString());
                 intent.putExtra("priceValue", mPriceValueTxt.getText().toString());
@@ -357,8 +300,8 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
         //Button submitBtn = (Button)findViewById(R.id.submitBtn);
 
         builder.setView(dialogView);
-        final android.support.design.widget.TextInputEditText minPrice = (android.support.design.widget.TextInputEditText) dialogView.findViewById(R.id.minPrice);
-        final android.support.design.widget.TextInputEditText maxPrice = (android.support.design.widget.TextInputEditText) dialogView.findViewById(R.id.maxPrice);
+        final TextInputEditText minPrice = (TextInputEditText) dialogView.findViewById(R.id.minPrice);
+        final TextInputEditText maxPrice = (TextInputEditText) dialogView.findViewById(R.id.maxPrice);
 
         builder.setTitle("Set Price");
         builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
@@ -419,12 +362,7 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                                 .append(joined).append(") and");
                         mSectorValueTxt.setText(joined);
                         break;
-                    case 4:
-                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_FLOOR +" IN (")
-                                .append(joined).append(") and");
-                        mFloorValueTxt.setText(joined);
-                        break;
-                    case 5:
+                     case 5:
 
                         stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_AREA+" IN (")
                                 .append(joined).append(") and");
@@ -446,26 +384,7 @@ public class FiltersActivity extends AppCompatActivity implements View.OnClickLi
                                 .append(joined).append(") and");
                         mLocationValueTxt.setText(joined);
                         break;
-                    case 9:
-
-                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_BEDROOM  +" IN (")
-                                .append(joined).append(") and");
-                        mBedroomValue.setText(joined);
-                        break;
-                    case 10:
-
-                        stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_SOCIETY  +" IN (")
-                                .append(joined).append(") and");
-                        mSocietyValue.setText(joined);
-                        break;
-                    case 11:
-                        mPlotFloorValue.setText(joined);
-                        if (joined.equals("\'Plot\'"))
-                            stringBuilder.append(" " + PropertyContract.PropertyEntry.COLUMN_FLOOR + " =\'Plot' and");
-                        else
-                            stringBuilder.append(" not " + PropertyContract.PropertyEntry.COLUMN_FLOOR + " =\'Plot\' and");
-                        break;
-                    case 12:
+                     case 12:
 
                         stringBuilder.append(" "+PropertyContract.PropertyEntry.COLUMN_REMARKS+" IN (")
                                 .append(joined).append(") and");
